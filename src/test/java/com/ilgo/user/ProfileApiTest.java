@@ -88,6 +88,16 @@ class ProfileApiTest {
     }
 
     @Test
+    void put_langTooLong_returns400_notServerError() throws Exception {
+        // default_lang 컬럼은 length=8. 초과 값은 DB 도달 전 400 으로 거절돼야 함(500 아님).
+        mockMvc.perform(put("/v1/profile").header("Authorization", token())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"lang\":\"toolonglang\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error.code", is("INVALID_REQUEST")));
+    }
+
+    @Test
     void get_withoutToken_returns401() throws Exception {
         mockMvc.perform(get("/v1/profile"))
                 .andExpect(status().isUnauthorized());
