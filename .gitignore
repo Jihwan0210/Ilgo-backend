@@ -1,1 +1,25 @@
-��
+# --- Build output ---
+/build/
+/.gradle/
+
+# --- IDE ---
+/.idea/
+*.iml
+*.iws
+*.ipr
+
+# --- Env & secrets ---
+.env
+.env.*
+!.env.example
+# 주의: application-supabase.yml 은 팀 로컬 실행용으로 추적 유지(private repo). 시크릿 포함.
+src/main/resources/application-local.yml
+
+# --- OS ---
+.DS_Store
+
+# --- Tooling ---
+/.omc/
+
+# --- Logs ---
+*.log
