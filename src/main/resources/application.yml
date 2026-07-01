@@ -33,7 +33,9 @@ jwt:
   # JWT_SECRET 환경변수가 있으면 그걸 쓰고, 없으면 아래 기본값 사용(배포/로컬 모두 동작).
   # ⚠️ 공개 저장소면 토큰 위조 위험 → 운영에서는 반드시 JWT_SECRET 로 덮어쓸 것.
   secret: ${JWT_SECRET:b7Yk2pQf9mZx4Rj8Ns3Vw6Lc1Hd5Tg0Ae7Uy2Ki9Oq4Bp8Xr3Mv6Sn1Zt5Wl0JfE2}
-  expires-in: ${JWT_EXPIRES_IN:604800}   # 초 단위, 기본 7일
+  # access 는 짧게(기본 30분), refresh 는 길게(기본 14일). refresh 는 DB 저장 + 회전.
+  access-expires-in: ${JWT_ACCESS_EXPIRES_IN:1800}      # 초 단위, 기본 30분
+  refresh-expires-in: ${JWT_REFRESH_EXPIRES_IN:1209600} # 초 단위, 기본 14일
 
 ai:
   # OpenAI 호환 게이트웨이(Chat Completions 형식).
