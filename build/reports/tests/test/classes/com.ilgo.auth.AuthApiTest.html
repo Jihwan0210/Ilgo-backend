@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="x-ua-compatible" content="IE=edge"/>
+<title>Test results - AuthApiTest</title>
+<link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
+<link href="../css/style.css" rel="stylesheet" type="text/css"/>
+<script src="../js/report.js" type="text/javascript"></script>
+</head>
+<body>
+<div id="content">
+<h1>AuthApiTest</h1>
+<div class="breadcrumbs">
+<a href="../index.html">all</a> &gt; 
+<a href="../packages/com.ilgo.auth.html">com.ilgo.auth</a> &gt; AuthApiTest</div>
+<div id="summary">
+<table>
+<tr>
+<td>
+<div class="summaryGroup">
+<table>
+<tr>
+<td>
+<div class="infoBox" id="tests">
+<div class="counter">8</div>
+<p>tests</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="failures">
+<div class="counter">0</div>
+<p>failures</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="ignored">
+<div class="counter">0</div>
+<p>ignored</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="duration">
+<div class="counter">0.666s</div>
+<p>duration</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</td>
+<td>
+<div class="infoBox success" id="successRate">
+<div class="percent">100%</div>
+<p>successful</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="tab-container">
+<ul class="tabLinks">
+<li>
+<a href="#">Tests</a>
+</li>
+<li>
+<a href="#">Standard output</a>
+</li>
+</ul>
+<div class="tab">
+<h2>Tests</h2>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Duration</th>
+<th>Result</th>
+</tr>
+</thead>
+<tr>
+<td class="success">login_success_returns200()</td>
+<td class="success">0.163s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">login_unknownEmail_returns401()</td>
+<td class="success">0.014s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">login_wrongPassword_returns401()</td>
+<td class="success">0.171s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">protectedEndpoint_withoutToken_401_withToken_200()</td>
+<td class="success">0.121s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">register_blankPassword_returns400()</td>
+<td class="success">0.007s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">register_duplicateEmail_returns409()</td>
+<td class="success">0.088s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">register_invalidEmail_returns400()</td>
+<td class="success">0.006s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">register_returns201_withToken()</td>
+<td class="success">0.096s</td>
+<td class="success">passed</td>
+</tr>
+</table>
+</div>
+<div class="tab">
+<h2>Standard output</h2>
+<span class="code">
+<pre>2026-07-01T21:18:09.009+09:00  INFO 10260 --- [ilgo] [    Test worker] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.ilgo.auth.AuthApiTest]: AuthApiTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-07-01T21:18:09.026+09:00  INFO 10260 --- [ilgo] [    Test worker] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.ilgo.IlgoApplication for test class com.ilgo.auth.AuthApiTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.16)
+
+2026-07-01T21:18:09.070+09:00  INFO 10260 --- [ilgo] [    Test worker] com.ilgo.auth.AuthApiTest                : Starting AuthApiTest using Java 21.0.9 with PID 10260 (started by 유지한 in C:\yjh\Re-Local Hackathon\Hackathon)
+2026-07-01T21:18:09.070+09:00  INFO 10260 --- [ilgo] [    Test worker] com.ilgo.auth.AuthApiTest                : No active profile set, falling back to 1 default profile: &quot;supabase&quot;
+2026-07-01T21:18:09.422+09:00  INFO 10260 --- [ilgo] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-07-01T21:18:09.458+09:00  INFO 10260 --- [ilgo] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 32 ms. Found 6 JPA repository interfaces.
+2026-07-01T21:18:09.572+09:00  INFO 10260 --- [ilgo] [    Test worker] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-07-01T21:18:09.578+09:00  INFO 10260 --- [ilgo] [    Test worker] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-07-01T21:18:09.595+09:00  INFO 10260 --- [ilgo] [    Test worker] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-07-01T21:18:09.597+09:00  INFO 10260 --- [ilgo] [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Starting...
+2026-07-01T21:18:09.603+09:00  INFO 10260 --- [ilgo] [    Test worker] com.zaxxer.hikari.pool.HikariPool        : HikariPool-4 - Added connection conn37: url=jdbc:h2:mem:ilgo_auth user=SA
+2026-07-01T21:18:09.603+09:00  INFO 10260 --- [ilgo] [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-4 - Start completed.
+2026-07-01T21:18:09.604+09:00  INFO 10260 --- [ilgo] [    Test worker] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-4)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-07-01T21:18:09.695+09:00  INFO 10260 --- [ilgo] [    Test worker] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-07-01T21:18:09.709+09:00  INFO 10260 --- [ilgo] [    Test worker] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-07-01T21:18:09.825+09:00  WARN 10260 --- [ilgo] [    Test worker] .s.s.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: 04469cdb-18d7-40c4-be4e-e734ab64abfd
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-07-01T21:18:09.827+09:00  INFO 10260 --- [ilgo] [    Test worker] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-07-01T21:18:09.984+09:00  INFO 10260 --- [ilgo] [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-07-01T21:18:09.984+09:00  INFO 10260 --- [ilgo] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-07-01T21:18:09.985+09:00  INFO 10260 --- [ilgo] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2026-07-01T21:18:09.995+09:00  INFO 10260 --- [ilgo] [    Test worker] com.ilgo.auth.AuthApiTest                : Started AuthApiTest in 0.964 seconds (process running for 18.494)
+2026-07-01T21:18:10.232+09:00  WARN 10260 --- [ilgo] [    Test worker] com.ilgo.common.GlobalExceptionHandler   : ApiException INVALID_CREDENTIALS: 이메일 또는 비밀번호가 올바르지 않습니다.
+2026-07-01T21:18:10.488+09:00  WARN 10260 --- [ilgo] [    Test worker] com.ilgo.common.GlobalExceptionHandler   : ApiException EMAIL_ALREADY_EXISTS: 이미 가입된 이메일입니다.
+2026-07-01T21:18:10.495+09:00  WARN 10260 --- [ilgo] [    Test worker] com.ilgo.common.GlobalExceptionHandler   : ApiException INVALID_EMAIL: 이메일 형식이 올바르지 않습니다.
+2026-07-01T21:18:10.666+09:00  WARN 10260 --- [ilgo] [    Test worker] com.ilgo.common.GlobalExceptionHandler   : ApiException INVALID_CREDENTIALS: 이메일 또는 비밀번호가 올바르지 않습니다.
+2026-07-01T21:18:10.675+09:00  WARN 10260 --- [ilgo] [    Test worker] com.ilgo.common.GlobalExceptionHandler   : ApiException INVALID_REQUEST: 비밀번호를 입력하세요.
+</pre>
+</span>
+</div>
+</div>
+<div id="footer">
+<p>
+<div>
+<label class="hidden" id="label-for-line-wrapping-toggle" for="line-wrapping-toggle">Wrap lines
+<input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
+</label>
+</div>Generated by 
+<a href="https://www.gradle.org">Gradle 8.14.5</a> at 2026. 7. 1. 오후 9:18:12</p>
+</div>
+</div>
+</body>
+</html>
