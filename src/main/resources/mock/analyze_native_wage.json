@@ -10,7 +10,9 @@
   "consequence": "If you arrive late, you may lose part of tomorrow's pay.",
   "cards": { "what": "Report for work (meetup)", "when": "Tomorrow 05:00", "where": "In front of the warehouse", "amount": null, "deadline": null },
   "risks": [
-    { "id": "rsk_2", "level": "red", "type": "임금", "message": "This message says your daily wage will be cut if you are late. Check your work contract." }
+    { "id": "rsk_2", "level": "red", "type": "임금", "message": "This message says your daily wage will be cut if you are late. Check your work contract.",
+      "detail": "The wage set in your work contract must be honored. Your employer may deduct only for the exact time you did not work; cutting more than that as a penalty may violate the law.",
+      "steps": ["Check the wage and deduction terms in your work contract.", "Ask for the deduction details in writing or by text.", "If it seems unfair, call a counseling hotline to ask."] }
   ],
   "actions": [
     { "id": "act_3", "text": "Set an alarm for 4:00 AM to arrive on time", "priority": 1, "is_done": false }

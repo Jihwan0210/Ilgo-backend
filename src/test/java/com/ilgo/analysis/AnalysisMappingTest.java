@@ -64,6 +64,35 @@ class AnalysisMappingTest {
     }
 
     @Test
+    void persistsRiskWithDetailAndSteps() {
+        User user = userRepository.save(new User("detail@ex.com", "h"));
+        Analysis a = newAnalysis(user, AnalysisStatus.DONE);
+        a.addRisk(new Risk(RiskLevel.RED, "임금", "부당 공제일 수 있어요",
+                "근로계약서에 정한 임금은 지켜야 해요.", List.of("계약서 확인", "서면 요청", "상담 전화")));
+        analysisRepository.save(a);
+        em.flush();
+        em.clear();
+
+        Risk loaded = analysisRepository.findById(a.getId()).orElseThrow().getRisks().get(0);
+        assertThat(loaded.getDetail()).isEqualTo("근로계약서에 정한 임금은 지켜야 해요.");
+        assertThat(loaded.getSteps()).containsExactly("계약서 확인", "서면 요청", "상담 전화");
+    }
+
+    @Test
+    void riskWithoutDetailStepsIsNullSafe() {
+        User user = userRepository.save(new User("nodetail@ex.com", "h"));
+        Analysis a = newAnalysis(user, AnalysisStatus.DONE);
+        a.addRisk(new Risk(RiskLevel.GREEN, "기타", "안전")); // 3-arg 하위호환 생성자
+        analysisRepository.save(a);
+        em.flush();
+        em.clear();
+
+        Risk loaded = analysisRepository.findById(a.getId()).orElseThrow().getRisks().get(0);
+        assertThat(loaded.getDetail()).isNull();
+        assertThat(loaded.getSteps()).isEmpty();
+    }
+
+    @Test
     void topRiskLevelIsNullWhenNoRisks() {
         User user = userRepository.save(new User("b@ex.com", "h"));
         Analysis a = analysisRepository.save(newAnalysis(user, AnalysisStatus.DONE));

@@ -25,7 +25,7 @@ public record AiAnalysis(
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record Risk(String level, String type, String message) {
+    public record Risk(String level, String type, String message, String detail, List<String> steps) {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
