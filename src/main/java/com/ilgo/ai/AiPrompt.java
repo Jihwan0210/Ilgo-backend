@@ -3,11 +3,11 @@ package com.ilgo.ai;
 import com.ilgo.user.OutputMode;
 
 /**
- * Claude 시스템 프롬프트 / 사용자 텍스트 빌더.
+ * AI 시스템 프롬프트 / 사용자 텍스트 빌더. (게이트웨이 무관, 프롬프트 내용만 담당)
  */
-public final class ClaudePrompt {
+public final class AiPrompt {
 
-    private ClaudePrompt() {
+    private AiPrompt() {
     }
 
     public static final String SYSTEM = """
@@ -43,6 +43,13 @@ public final class ClaudePrompt {
             { "reply_drafts": [ { "korean": "정중한 한국어 답장", "note_in_lang": "사용자 언어 해설" } ] }
             """;
 
+    /** 이미지와 함께 넣는 지시 텍스트. */
+    public static String userText(OutputMode outputMode, String lang) {
+        String mode = outputMode != null ? outputMode.getJson() : OutputMode.EASY_KOREAN.getJson();
+        String language = (lang != null && !lang.isBlank()) ? lang : "ko";
+        return "user_profile={output_mode:" + mode + ", lang:" + language + "}. JSON으로만 응답하세요.";
+    }
+
     /** 답장 재생성용 사용자 텍스트. */
     public static String replyUserText(String lang, String originalText, String explainedText, String tone) {
         String language = (lang != null && !lang.isBlank()) ? lang : "en";
@@ -55,12 +62,5 @@ public final class ClaudePrompt {
 
     private static String safe(String s) {
         return s == null ? "" : s;
-    }
-
-    /** 사용자 메시지에 함께 넣는 텍스트 블록. */
-    public static String userText(OutputMode outputMode, String lang) {
-        String mode = outputMode != null ? outputMode.getJson() : OutputMode.EASY_KOREAN.getJson();
-        String language = (lang != null && !lang.isBlank()) ? lang : "ko";
-        return "user_profile={output_mode:" + mode + ", lang:" + language + "}. JSON으로만 응답하세요.";
     }
 }

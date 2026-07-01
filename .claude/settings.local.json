@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew test *)",
+      "Bash(git check-ignore *)",
+      "Bash(git ls-tree *)",
+      "Bash(git rm *)",
+      "Bash(grep -rn \"\\\\\"local\\\\\"\\\\|profiles.active=local\\\\|application-local\" src/test)",
+      "Bash(rm -f src/main/resources/application-local.yml)",
+      "Bash(./gradlew clean *)",
+      "Bash(taskkill //F //IM java.exe)"
+    ]
+  }
+}

@@ -4,6 +4,10 @@ server:
 spring:
   application:
     name: ilgo
+  profiles:
+    # 아무 프로필도 지정하지 않으면 supabase 를 기본 활성화 → application-supabase.yml 로드(로컬 개발).
+    # 명시적으로 프로필을 주면(예: local, prod) 이 값은 무시됨.
+    default: supabase
   jackson:
     property-naming-strategy: SNAKE_CASE
   servlet:
@@ -25,12 +29,21 @@ spring:
         format_sql: false
     open-in-view: false
 
-anthropic:
-  api-key: ${ANTHROPIC_API_KEY:}
-  model: ${ANTHROPIC_MODEL:claude-opus-4-8}
-  base-url: https://api.anthropic.com/v1/messages
-  version: "2023-06-01"
-  max-tokens: 1200
+jwt:
+  # JWT_SECRET 환경변수가 있으면 그걸 쓰고, 없으면 아래 기본값 사용(배포/로컬 모두 동작).
+  # ⚠️ 공개 저장소면 토큰 위조 위험 → 운영에서는 반드시 JWT_SECRET 로 덮어쓸 것.
+  secret: ${JWT_SECRET:b7Yk2pQf9mZx4Rj8Ns3Vw6Lc1Hd5Tg0Ae7Uy2Ki9Oq4Bp8Xr3Mv6Sn1Zt5Wl0JfE2}
+  expires-in: ${JWT_EXPIRES_IN:604800}   # 초 단위, 기본 7일
+
+ai:
+  # OpenAI 호환 게이트웨이(Chat Completions 형식).
+  # 실제 키는 여기(깃 추적 파일)에 넣지 말 것.
+  #  - 로컬: application-supabase.yml(gitignore)에 ai.api-key 로 넣기
+  #  - 배포(Railway): 환경변수 AI_API_KEY 설정
+  base-url: ${AI_BASE_URL:https://factchat-cloud.mindlogic.ai/v1/gateway/chat/completions}
+  api-key: ${AI_API_KEY:}
+  model: ${AI_MODEL:gemini-3-flash-preview}
+  max-tokens: ${AI_MAX_TOKENS:4096}   # 실제 문서는 OCR 원문+풀이가 길어 1200 이면 잘려서 422 발생
   temperature: 0.2
   timeout-seconds: 30
 
