@@ -1,6 +1,8 @@
 package com.ilgo.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ilgo.user.User;
+import com.ilgo.user.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -12,7 +14,14 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
@@ -42,6 +51,10 @@ class RefreshTokenApiTest {
     private ObjectMapper objectMapper;
     @Autowired
     private JdbcTemplate jdbcTemplate;
+    @Autowired
+    private RefreshTokenRepository refreshTokenRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     /** register 후 전체 응답 JSON 문자열 반환. */
     private String register(String email) throws Exception {
@@ -193,6 +206,60 @@ class RefreshTokenApiTest {
         Integer hashCount = jdbcTemplate.queryForObject(
                 "select count(*) from refresh_tokens where token_hash = ?", Integer.class, sha256Hex(raw));
         assertEquals(1, hashCount, "sha256 hash of refresh token must be stored");
+    }
+
+    @Test
+    void reuseOfExpiredRevokedToken_doesNotRevokeActiveTokens() throws Exception {
+        // 리뷰 반영: 만료 판정을 재사용 감지보다 먼저 → 만료된(폐기된) 토큰 재제출이
+        // 유저의 활성 refresh 전체를 폐기(DoS)하지 못하게 한다.
+        String email = uniqueEmail("expreuse");
+        String rActive = field(register(email), "refresh_token");
+
+        User user = userRepository.findByEmail(email).orElseThrow();
+        String expiredRaw = "expired-" + UUID.randomUUID();
+        RefreshToken expired = new RefreshToken(user, sha256Hex(expiredRaw),
+                OffsetDateTime.now().minusDays(1));   // 이미 만료
+        expired.setRevokedAt(OffsetDateTime.now().minusHours(1)); // 그리고 폐기됨
+        refreshTokenRepository.save(expired);
+
+        // 만료+폐기 토큰 제출 → 401 (재사용 감지 트리거 X)
+        mockMvc.perform(post("/v1/auth/refresh")
+                        .contentType(MediaType.APPLICATION_JSON).content(refresh(expiredRaw)))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error.code", is("INVALID_REFRESH_TOKEN")));
+
+        // 활성 토큰은 살아있어야 함 (전체 폐기되지 않았음)
+        mockMvc.perform(post("/v1/auth/refresh")
+                        .contentType(MediaType.APPLICATION_JSON).content(refresh(rActive)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void concurrentRotateOfSameToken_onlyOneSucceeds() throws Exception {
+        // 리뷰 반영: 동일 refresh 로 동시 rotate 시 비관적 락으로 직렬화 → 정확히 1건만 성공.
+        String r1 = field(register(uniqueEmail("conc")), "refresh_token");
+
+        int n = 2;
+        ExecutorService pool = Executors.newFixedThreadPool(n);
+        CyclicBarrier barrier = new CyclicBarrier(n);
+        List<Future<Integer>> futures = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            futures.add(pool.submit(() -> {
+                barrier.await();
+                return mockMvc.perform(post("/v1/auth/refresh")
+                                .contentType(MediaType.APPLICATION_JSON).content(refresh(r1)))
+                        .andReturn().getResponse().getStatus();
+            }));
+        }
+        int ok = 0, unauthorized = 0;
+        for (Future<Integer> f : futures) {
+            int s = f.get();
+            if (s == 200) ok++;
+            else if (s == 401) unauthorized++;
+        }
+        pool.shutdown();
+        assertEquals(1, ok, "동시 rotate 중 정확히 1건만 성공해야 함");
+        assertEquals(1, unauthorized, "나머지 1건은 재사용으로 거부돼야 함");
     }
 
     private static String sha256Hex(String s) throws Exception {

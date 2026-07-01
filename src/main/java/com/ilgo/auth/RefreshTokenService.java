@@ -47,17 +47,20 @@ public class RefreshTokenService {
     /** raw refresh 를 검증하고 1회용 회전한다. 실패 시 {@link ApiException}(INVALID_REFRESH_TOKEN). */
     @Transactional
     public Rotation rotate(String raw) {
-        RefreshToken token = repository.findByTokenHash(hash(raw))
+        // 비관적 락으로 동일 토큰의 동시 회전을 직렬화(회전=1회용 보장).
+        RefreshToken token = repository.findByTokenHashForUpdate(hash(raw))
                 .orElseThrow(() -> new ApiException(ErrorCode.INVALID_REFRESH_TOKEN));
         OffsetDateTime now = OffsetDateTime.now();
 
-        if (token.getRevokedAt() != null) {
-            // 이미 회전되어 폐기된 토큰의 재사용 → 탈취 정황 → 유저 전체 폐기
-            // (별도 트랜잭션에서 커밋: 아래 예외로 현재 트랜잭션이 롤백돼도 폐기는 유지)
-            reuseGuard.revokeAllActiveForUser(token.getUser().getId());
+        // 1) 만료 먼저 판정: 만료 토큰은 재사용 감지(전체 폐기)를 트리거하지 않는다.
+        //    (만료된 폐기 토큰을 반복 제출해 유저 세션을 계속 폐기시키는 DoS 방지)
+        if (!token.getExpiresAt().isAfter(now)) {
             throw new ApiException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
-        if (!token.getExpiresAt().isAfter(now)) {
+        // 2) 만료 전인데 이미 폐기됨 → 회전된 토큰의 재사용(탈취 정황) → 유저 활성 토큰 전체 폐기.
+        //    (별도 트랜잭션에서 커밋: 아래 예외로 현재 트랜잭션이 롤백돼도 폐기는 유지)
+        if (token.getRevokedAt() != null) {
+            reuseGuard.revokeAllActiveForUser(token.getUser().getId());
             throw new ApiException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
 
