@@ -2,6 +2,8 @@ package com.ilgo.auth;
 
 import com.ilgo.auth.dto.AuthResponse;
 import com.ilgo.auth.dto.LoginRequest;
+import com.ilgo.auth.dto.LogoutRequest;
+import com.ilgo.auth.dto.RefreshRequest;
 import com.ilgo.auth.dto.RegisterRequest;
 import com.ilgo.common.ApiException;
 import com.ilgo.common.ErrorCode;
@@ -24,11 +26,14 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
+    private final RefreshTokenService refreshTokenService;
 
-    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtProvider jwtProvider) {
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder,
+                       JwtProvider jwtProvider, RefreshTokenService refreshTokenService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtProvider = jwtProvider;
+        this.refreshTokenService = refreshTokenService;
     }
 
     @Transactional
@@ -53,7 +58,7 @@ public class AuthService {
         return issue(user);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public AuthResponse login(LoginRequest request) {
         String email = request.email() == null ? null : request.email().trim();
         // 어느 쪽이 틀렸는지 노출하지 않도록 실패는 모두 INVALID_CREDENTIALS
@@ -65,8 +70,33 @@ public class AuthService {
         return issue(user);
     }
 
+    /** refresh 토큰을 회전하고 새 access/refresh 를 발급한다. */
+    @Transactional
+    public AuthResponse refresh(RefreshRequest request) {
+        String raw = request.refreshToken() == null ? null : request.refreshToken().trim();
+        if (!StringUtils.hasText(raw)) {
+            throw new ApiException(ErrorCode.INVALID_REFRESH_TOKEN);
+        }
+        RefreshTokenService.Rotation rotation = refreshTokenService.rotate(raw);
+        User user = rotation.user();
+        String access = jwtProvider.generateToken(user.getId(), user.getEmail());
+        return AuthResponse.bearer(access, rotation.newRefreshToken(),
+                jwtProvider.getAccessExpiresInSeconds(), user.getId().toString(), user.getEmail());
+    }
+
+    /** logout: 제출된 refresh 토큰을 폐기한다(멱등). */
+    @Transactional
+    public void logout(LogoutRequest request) {
+        String raw = request.refreshToken() == null ? null : request.refreshToken().trim();
+        if (StringUtils.hasText(raw)) {
+            refreshTokenService.revoke(raw);
+        }
+    }
+
     private AuthResponse issue(User user) {
-        String token = jwtProvider.generateToken(user.getId(), user.getEmail());
-        return AuthResponse.bearer(token, user.getId().toString(), user.getEmail());
+        String access = jwtProvider.generateToken(user.getId(), user.getEmail());
+        String refresh = refreshTokenService.issue(user);
+        return AuthResponse.bearer(access, refresh, jwtProvider.getAccessExpiresInSeconds(),
+                user.getId().toString(), user.getEmail());
     }
 }

@@ -20,20 +20,21 @@ import java.util.UUID;
 public class JwtProvider {
 
     private final SecretKey key;
-    private final long expiresInSeconds;
+    private final long accessExpiresInSeconds;
 
     public JwtProvider(@Value("${jwt.secret:}") String secret,
-                       @Value("${jwt.expires-in:604800}") long expiresInSeconds) {
+                       @Value("${jwt.access-expires-in:1800}") long accessExpiresInSeconds) {
         if (!StringUtils.hasText(secret) || secret.getBytes(StandardCharsets.UTF_8).length < 32) {
             throw new IllegalStateException(
                     "jwt.secret 환경변수(JWT_SECRET)가 필요합니다. HS256 은 32바이트 이상이어야 합니다.");
         }
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-        this.expiresInSeconds = expiresInSeconds;
+        this.accessExpiresInSeconds = accessExpiresInSeconds;
     }
 
-    public long getExpiresInSeconds() {
-        return expiresInSeconds;
+    /** access 토큰 수명(초). 응답의 expires_in 값. */
+    public long getAccessExpiresInSeconds() {
+        return accessExpiresInSeconds;
     }
 
     public String generateToken(UUID userId, String email) {
@@ -42,7 +43,7 @@ public class JwtProvider {
                 .subject(userId.toString())
                 .claim("email", email)
                 .issuedAt(new Date(now))
-                .expiration(new Date(now + expiresInSeconds * 1000))
+                .expiration(new Date(now + accessExpiresInSeconds * 1000))
                 .signWith(key)
                 .compact();
     }
