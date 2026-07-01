@@ -1,0 +1,51 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: ilgo
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+  servlet:
+    multipart:
+      max-file-size: 6MB      # 5MB 이미지 + 여유
+      max-request-size: 8MB
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    # Supabase Pooler(6543, pgbouncer transaction mode) 사용 시:
+    #   URL 뒤에 ?prepareThreshold=0 을 붙여 prepared statement 이슈를 피한다.
+    #   예) jdbc:postgresql://<host>:6543/postgres?prepareThreshold=0
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: false
+    open-in-view: false
+
+anthropic:
+  api-key: ${ANTHROPIC_API_KEY:}
+  model: ${ANTHROPIC_MODEL:claude-opus-4-8}
+  base-url: https://api.anthropic.com/v1/messages
+  version: "2023-06-01"
+  max-tokens: 1200
+  temperature: 0.2
+  timeout-seconds: 30
+
+app:
+  rate-limit-per-min: ${RATE_LIMIT_PER_MIN:20}
+  mock-mode: ${MOCK_MODE:false}
+  mock-save: ${MOCK_SAVE:false}   # MOCK_MODE 에서 결과를 DB 에 저장할지 (기본: 저장 없이 즉시 반환)
+  max-image-bytes: 5242880        # 5MB
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+logging:
+  level:
+    root: INFO
