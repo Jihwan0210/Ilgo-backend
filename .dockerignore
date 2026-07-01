@@ -1,0 +1,27 @@
+# VCS / IDE / tooling
+.git
+.gitignore
+.gitattributes
+.idea
+*.iml
+.omc
+.claude
+
+# Build output (image rebuilds from source)
+build
+.gradle
+
+# Docs
+docs
+HELP.md
+*.md
+
+# Env & local secrets (image uses injected env vars, never these files)
+.env
+.env.*
+!.env.example
+src/main/resources/application-supabase.yml
+src/main/resources/application-local.yml
+
+# Tests not needed in image (bootJar built with -x test)
+src/test
