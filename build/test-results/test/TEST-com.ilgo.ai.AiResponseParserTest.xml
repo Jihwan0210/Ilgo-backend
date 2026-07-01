@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.ilgo.ai.AiResponseParserTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-07-01T12:18:03.418Z" hostname="DESKTOP-SNRQ6FP" time="0.154">
+  <properties/>
+  <testcase name="throwsOnGarbage()" classname="com.ilgo.ai.AiResponseParserTest" time="0.059"/>
+  <testcase name="parsesFullJson()" classname="com.ilgo.ai.AiResponseParserTest" time="0.082"/>
+  <testcase name="extractsJsonEvenWithSurroundingText()" classname="com.ilgo.ai.AiResponseParserTest" time="0.006"/>
+  <testcase name="parsesJsonWithCodeFence()" classname="com.ilgo.ai.AiResponseParserTest" time="0.005"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

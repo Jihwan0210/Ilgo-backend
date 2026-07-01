@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="x-ua-compatible" content="IE=edge"/>
+<title>Test results - SwaggerDocsTest</title>
+<link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
+<link href="../css/style.css" rel="stylesheet" type="text/css"/>
+<script src="../js/report.js" type="text/javascript"></script>
+</head>
+<body>
+<div id="content">
+<h1>SwaggerDocsTest</h1>
+<div class="breadcrumbs">
+<a href="../index.html">all</a> &gt; 
+<a href="../packages/com.ilgo.config.html">com.ilgo.config</a> &gt; SwaggerDocsTest</div>
+<div id="summary">
+<table>
+<tr>
+<td>
+<div class="summaryGroup">
+<table>
+<tr>
+<td>
+<div class="infoBox" id="tests">
+<div class="counter">4</div>
+<p>tests</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="failures">
+<div class="counter">0</div>
+<p>failures</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="ignored">
+<div class="counter">0</div>
+<p>ignored</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="duration">
+<div class="counter">0.641s</div>
+<p>duration</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</td>
+<td>
+<div class="infoBox success" id="successRate">
+<div class="percent">100%</div>
+<p>successful</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="tab-container">
+<ul class="tabLinks">
+<li>
+<a href="#">Tests</a>
+</li>
+<li>
+<a href="#">Standard output</a>
+</li>
+</ul>
+<div class="tab">
+<h2>Tests</h2>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Duration</th>
+<th>Result</th>
+</tr>
+</thead>
+<tr>
+<td class="success">apiDocs_declaresBearerAuthScheme_andGlobalRequirement()</td>
+<td class="success">0.579s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">apiDocs_generated_withInfoAndPaths()</td>
+<td class="success">0.019s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">schema_fieldNames_areSnakeCase_matchingResponse()</td>
+<td class="success">0.020s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">swaggerUi_isAvailable()</td>
+<td class="success">0.023s</td>
+<td class="success">passed</td>
+</tr>
+</table>
+</div>
+<div class="tab">
+<h2>Standard output</h2>
+<span class="code">
+<pre>2026-07-01T21:18:10.692+09:00  INFO 10260 --- [ilgo] [    Test worker] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.ilgo.config.SwaggerDocsTest]: SwaggerDocsTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-07-01T21:18:10.706+09:00  INFO 10260 --- [ilgo] [    Test worker] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.ilgo.IlgoApplication for test class com.ilgo.config.SwaggerDocsTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.16)
+
+2026-07-01T21:18:10.744+09:00  INFO 10260 --- [ilgo] [    Test worker] com.ilgo.config.SwaggerDocsTest          : Starting SwaggerDocsTest using Java 21.0.9 with PID 10260 (started by 유지한 in C:\yjh\Re-Local Hackathon\Hackathon)
+2026-07-01T21:18:10.744+09:00  INFO 10260 --- [ilgo] [    Test worker] com.ilgo.config.SwaggerDocsTest          : No active profile set, falling back to 1 default profile: &quot;supabase&quot;
+2026-07-01T21:18:11.014+09:00  INFO 10260 --- [ilgo] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-07-01T21:18:11.041+09:00  INFO 10260 --- [ilgo] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 25 ms. Found 6 JPA repository interfaces.
+2026-07-01T21:18:11.164+09:00  INFO 10260 --- [ilgo] [    Test worker] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-07-01T21:18:11.169+09:00  INFO 10260 --- [ilgo] [    Test worker] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-07-01T21:18:11.182+09:00  INFO 10260 --- [ilgo] [    Test worker] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-07-01T21:18:11.184+09:00  INFO 10260 --- [ilgo] [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-5 - Starting...
+2026-07-01T21:18:11.188+09:00  INFO 10260 --- [ilgo] [    Test worker] com.zaxxer.hikari.pool.HikariPool        : HikariPool-5 - Added connection conn47: url=jdbc:h2:mem:ilgo_swagger user=SA
+2026-07-01T21:18:11.188+09:00  INFO 10260 --- [ilgo] [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-5 - Start completed.
+2026-07-01T21:18:11.189+09:00  INFO 10260 --- [ilgo] [    Test worker] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-5)']
+	Database driver: undefined/unknown
+	Database version: 2.3.232
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-07-01T21:18:11.266+09:00  INFO 10260 --- [ilgo] [    Test worker] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-07-01T21:18:11.281+09:00  INFO 10260 --- [ilgo] [    Test worker] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-07-01T21:18:11.379+09:00  WARN 10260 --- [ilgo] [    Test worker] .s.s.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: 79fb6d8c-b869-4a33-96de-6bb697a9d821
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-07-01T21:18:11.380+09:00  INFO 10260 --- [ilgo] [    Test worker] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-07-01T21:18:11.499+09:00  INFO 10260 --- [ilgo] [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-07-01T21:18:11.500+09:00  INFO 10260 --- [ilgo] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-07-01T21:18:11.500+09:00  INFO 10260 --- [ilgo] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2026-07-01T21:18:11.510+09:00  INFO 10260 --- [ilgo] [    Test worker] com.ilgo.config.SwaggerDocsTest          : Started SwaggerDocsTest in 0.8 seconds (process running for 20.008)
+2026-07-01T21:18:12.037+09:00  INFO 10260 --- [ilgo] [    Test worker] o.springdoc.api.AbstractOpenApiResource  : Init duration for springdoc-openapi is: 494 ms
+</pre>
+</span>
+</div>
+</div>
+<div id="footer">
+<p>
+<div>
+<label class="hidden" id="label-for-line-wrapping-toggle" for="line-wrapping-toggle">Wrap lines
+<input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
+</label>
+</div>Generated by 
+<a href="https://www.gradle.org">Gradle 8.14.5</a> at 2026. 7. 1. 오후 9:18:12</p>
+</div>
+</div>
+</body>
+</html>
