@@ -4,6 +4,8 @@ import com.ilgo.user.OutputMode;
 
 public record ProfileResponse(
         OutputMode outputMode,
-        String lang
+        String lang,
+        double textScale,
+        boolean deadlineAlarm
 ) {
 }

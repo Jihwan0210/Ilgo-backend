@@ -1,6 +1,8 @@
 package com.ilgo.analysis;
 
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -12,10 +14,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -42,13 +47,31 @@ public class Risk {
     @Column(columnDefinition = "text")
     private String message;
 
+    /** 신호등 상세 설명(위험 상세 화면). 없으면 null. */
+    @Column(columnDefinition = "text")
+    private String detail;
+
+    /** 단계별 대처 방법(위험 상세 화면). 순서 보존. 없으면 빈 리스트. */
+    @ElementCollection
+    @CollectionTable(name = "risk_steps",
+            joinColumns = @JoinColumn(name = "risk_id", foreignKey = @ForeignKey(name = "fk_risk_steps_risk")))
+    @OrderColumn(name = "step_order")
+    @Column(name = "step", columnDefinition = "text")
+    private List<String> steps = new ArrayList<>();
+
     public Risk() {
     }
 
     public Risk(RiskLevel level, String type, String message) {
+        this(level, type, message, null, null);
+    }
+
+    public Risk(RiskLevel level, String type, String message, String detail, List<String> steps) {
         this.level = level;
         this.type = type;
         this.message = message;
+        this.detail = detail;
+        this.steps = (steps != null) ? new ArrayList<>(steps) : new ArrayList<>();
     }
 
     public UUID getId() {
@@ -89,5 +112,21 @@ public class Risk {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public String getDetail() {
+        return detail;
+    }
+
+    public void setDetail(String detail) {
+        this.detail = detail;
+    }
+
+    public List<String> getSteps() {
+        return steps;
+    }
+
+    public void setSteps(List<String> steps) {
+        this.steps = (steps != null) ? new ArrayList<>(steps) : new ArrayList<>();
     }
 }

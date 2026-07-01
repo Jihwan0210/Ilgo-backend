@@ -378,7 +378,8 @@ public class AnalysisService {
 
         if (p.risks() != null) {
             for (AiAnalysis.Risk r : p.risks()) {
-                analysis.addRisk(new Risk(RiskLevel.fromJson(r.level()), r.type(), r.message()));
+                analysis.addRisk(new Risk(RiskLevel.fromJson(r.level()), r.type(), r.message(),
+                        r.detail(), r.steps()));
             }
         }
         if (p.actions() != null) {
@@ -400,7 +401,8 @@ public class AnalysisService {
     public AnalysisResponse toResponse(Analysis a) {
         List<RiskDto> risks = new ArrayList<>();
         for (Risk r : a.getRisks()) {
-            risks.add(new RiskDto(str(r.getId()), r.getLevel(), r.getType(), r.getMessage()));
+            risks.add(new RiskDto(str(r.getId()), r.getLevel(), r.getType(), r.getMessage(),
+                    r.getDetail(), r.getSteps()));
         }
         List<ActionDto> actions = new ArrayList<>();
         for (Action ac : a.getActions()) {
@@ -442,7 +444,7 @@ public class AnalysisService {
         }
         if (r.risks() != null) {
             for (RiskDto rd : r.risks()) {
-                a.addRisk(new Risk(rd.level(), rd.type(), rd.message()));
+                a.addRisk(new Risk(rd.level(), rd.type(), rd.message(), rd.detail(), rd.steps()));
             }
         }
         if (r.actions() != null) {

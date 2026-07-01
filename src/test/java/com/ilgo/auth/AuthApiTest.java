@@ -120,6 +120,38 @@ class AuthApiTest {
     }
 
     @Test
+    void signup_returns201_withToken() throws Exception {
+        String email = "signup" + UUID.randomUUID() + "@example.com";
+        mockMvc.perform(post("/v1/auth/signup")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"" + email + "\",\"password\":\"pass1234\"}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.access_token", notNullValue()))
+                .andExpect(jsonPath("$.user.email", is(email)));
+    }
+
+    @Test
+    void me_withToken_returnsUserAndProfile() throws Exception {
+        String email = "me" + UUID.randomUUID() + "@example.com";
+        String resp = register(email, "pass1234");
+        String token = objectMapper.readTree(resp).get("access_token").asText();
+
+        mockMvc.perform(get("/v1/auth/me").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.user.email", is(email)))
+                .andExpect(jsonPath("$.user.id", notNullValue()))
+                .andExpect(jsonPath("$.profile.output_mode", is("easy_korean")))
+                .andExpect(jsonPath("$.profile.lang", is("ko")));
+    }
+
+    @Test
+    void me_withoutToken_returns401() throws Exception {
+        mockMvc.perform(get("/v1/auth/me"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.error.code", is("UNAUTHORIZED")));
+    }
+
+    @Test
     void protectedEndpoint_withoutToken_401_withToken_200() throws Exception {
         // 토큰 없이 → 401
         mockMvc.perform(get("/v1/analyses"))

@@ -9,6 +9,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -36,6 +37,17 @@ public class User {
 
     @Column(name = "default_lang", nullable = false, length = 8)
     private String defaultLang = "ko";
+
+    /** 글씨 크기 배율(0.9/1.0/1.15/1.3). 기본 1.0. */
+    // ColumnDefault: 기존 행이 있는 테이블에 NOT NULL 컬럼을 ddl-auto 로 추가할 때 기본값으로 백필되도록.
+    @ColumnDefault("1.0")
+    @Column(name = "text_scale", nullable = false)
+    private double textScale = 1.0;
+
+    /** 기한 알림 on/off. 기본 true. */
+    @ColumnDefault("true")
+    @Column(name = "deadline_alarm", nullable = false)
+    private boolean deadlineAlarm = true;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -91,6 +103,22 @@ public class User {
 
     public void setDefaultLang(String defaultLang) {
         this.defaultLang = defaultLang;
+    }
+
+    public double getTextScale() {
+        return textScale;
+    }
+
+    public void setTextScale(double textScale) {
+        this.textScale = textScale;
+    }
+
+    public boolean isDeadlineAlarm() {
+        return deadlineAlarm;
+    }
+
+    public void setDeadlineAlarm(boolean deadlineAlarm) {
+        this.deadlineAlarm = deadlineAlarm;
     }
 
     public OffsetDateTime getCreatedAt() {

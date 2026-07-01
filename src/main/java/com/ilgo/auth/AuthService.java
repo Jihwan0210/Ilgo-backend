@@ -3,11 +3,13 @@ package com.ilgo.auth;
 import com.ilgo.auth.dto.AuthResponse;
 import com.ilgo.auth.dto.LoginRequest;
 import com.ilgo.auth.dto.LogoutRequest;
+import com.ilgo.auth.dto.MeResponse;
 import com.ilgo.auth.dto.RefreshRequest;
 import com.ilgo.auth.dto.RegisterRequest;
 import com.ilgo.common.ApiException;
 import com.ilgo.common.ErrorCode;
 import com.ilgo.security.JwtProvider;
+import com.ilgo.user.ProfileService;
 import com.ilgo.user.User;
 import com.ilgo.user.UserRepository;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -27,13 +29,16 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final RefreshTokenService refreshTokenService;
+    private final ProfileService profileService;
 
     public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder,
-                       JwtProvider jwtProvider, RefreshTokenService refreshTokenService) {
+                       JwtProvider jwtProvider, RefreshTokenService refreshTokenService,
+                       ProfileService profileService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtProvider = jwtProvider;
         this.refreshTokenService = refreshTokenService;
+        this.profileService = profileService;
     }
 
     @Transactional
@@ -82,6 +87,20 @@ public class AuthService {
         String access = jwtProvider.generateToken(user.getId(), user.getEmail());
         return AuthResponse.bearer(access, rotation.newRefreshToken(),
                 jwtProvider.getAccessExpiresInSeconds(), user.getId().toString(), user.getEmail());
+    }
+
+    /** signup = register 별칭(§3-1). 동일하게 계정 생성 후 토큰을 발급한다. */
+    @Transactional
+    public AuthResponse signup(RegisterRequest request) {
+        return register(request);
+    }
+
+    /** 세션 확인(§3-3): 인증된 사용자와 프로필을 반환한다. */
+    @Transactional(readOnly = true)
+    public MeResponse me(User user) {
+        return new MeResponse(
+                new AuthResponse.UserSummary(user.getId().toString(), user.getEmail()),
+                profileService.get(user));
     }
 
     /** logout: 제출된 refresh 토큰을 폐기한다(멱등). */
