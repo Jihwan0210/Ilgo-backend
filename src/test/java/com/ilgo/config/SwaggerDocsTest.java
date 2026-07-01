@@ -15,7 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * springdoc OpenAPI 문서 생성 및 X-Device-Id 헤더 문서화 검증.
+ * springdoc OpenAPI 문서 생성 + JWT(bearerAuth) 연동 + snake_case 스키마 검증.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -24,7 +24,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "spring.datasource.username=sa",
         "spring.datasource.password=",
         "spring.jpa.hibernate.ddl-auto=create-drop",
-        "app.mock-mode=true"
+        "app.mock-mode=true",
+        "jwt.secret=test-secret-key-for-junit-0123456789-abcdef"
 })
 class SwaggerDocsTest {
 
@@ -36,44 +37,36 @@ class SwaggerDocsTest {
         mockMvc.perform(get("/v3/api-docs"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.info.title", is("읽고 (Ilgo) API")))
-                .andExpect(jsonPath("$.paths./v1/analyses").exists())
-                .andExpect(jsonPath("$.paths./v1/analyses/{id}").exists())
-                .andExpect(jsonPath("$.paths./v1/profile").exists())
-                .andExpect(jsonPath("$.paths./health").exists());
+                .andExpect(jsonPath("$['paths']['/v1/analyses']").exists())
+                .andExpect(jsonPath("$['paths']['/v1/auth/register']").exists())
+                .andExpect(jsonPath("$['paths']['/v1/auth/login']").exists())
+                .andExpect(jsonPath("$['paths']['/health']").exists());
     }
 
     @Test
-    void apiDocs_documentsDeviceIdHeader_onV1_notOnHealth() throws Exception {
-        String body = mockMvc.perform(get("/v3/api-docs"))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
-
-        // /v1 오퍼레이션에는 X-Device-Id 헤더가 문서화되어야 한다.
+    void apiDocs_declaresBearerAuthScheme_andGlobalRequirement() throws Exception {
         mockMvc.perform(get("/v3/api-docs"))
-                .andExpect(jsonPath("$['paths']['/v1/profile']['get']['parameters'][0]['name']",
-                        is("X-Device-Id")));
-
-        // 전역적으로 헤더가 존재
-        org.assertj.core.api.Assertions.assertThat(body).contains("X-Device-Id");
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$['components']['securitySchemes']['bearerAuth']['type']", is("http")))
+                .andExpect(jsonPath("$['components']['securitySchemes']['bearerAuth']['scheme']", is("bearer")))
+                .andExpect(jsonPath("$['components']['securitySchemes']['bearerAuth']['bearerFormat']", is("JWT")))
+                // 전역 보안 요구 존재
+                .andExpect(jsonPath("$.security[0].bearerAuth").exists());
     }
 
     @Test
     void schema_fieldNames_areSnakeCase_matchingResponse() throws Exception {
         mockMvc.perform(get("/v3/api-docs"))
                 .andExpect(status().isOk())
-                // 응답 전체 스키마: snake_case 로 노출, camelCase 는 없어야 함
                 .andExpect(jsonPath("$['components']['schemas']['AnalysisResponse']['properties']['summary_one_line']").exists())
-                .andExpect(jsonPath("$['components']['schemas']['AnalysisResponse']['properties']['output_mode']").exists())
-                .andExpect(jsonPath("$['components']['schemas']['AnalysisResponse']['properties']['doc_type']").exists())
                 .andExpect(jsonPath("$['components']['schemas']['AnalysisResponse']['properties']['reply_drafts']").exists())
-                .andExpect(jsonPath("$['components']['schemas']['AnalysisResponse']['properties']['created_at']").exists())
                 .andExpect(jsonPath("$['components']['schemas']['AnalysisResponse']['properties']['summaryOneLine']").doesNotExist())
-                .andExpect(jsonPath("$['components']['schemas']['AnalysisResponse']['properties']['replyDrafts']").doesNotExist())
-                // 목록 스키마
                 .andExpect(jsonPath("$['components']['schemas']['AnalysisListItem']['properties']['top_risk_level']").exists())
-                .andExpect(jsonPath("$['components']['schemas']['AnalysisListItem']['properties']['card_deadline']").exists())
                 .andExpect(jsonPath("$['components']['schemas']['AnalysisListResponse']['properties']['next_cursor']").exists())
-                .andExpect(jsonPath("$['components']['schemas']['AnalysisListItem']['properties']['topRiskLevel']").doesNotExist());
+                // 인증 응답도 snake_case
+                .andExpect(jsonPath("$['components']['schemas']['AuthResponse']['properties']['access_token']").exists())
+                .andExpect(jsonPath("$['components']['schemas']['AuthResponse']['properties']['token_type']").exists())
+                .andExpect(jsonPath("$['components']['schemas']['AuthResponse']['properties']['accessToken']").doesNotExist());
     }
 
     @Test

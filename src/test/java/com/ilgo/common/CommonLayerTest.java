@@ -1,97 +1,75 @@
 package com.ilgo.common;
 
-import com.ilgo.user.User;
-import com.ilgo.user.UserService;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 class CommonLayerTest {
 
     private final MockHttpServletResponse response = new MockHttpServletResponse();
 
-    // ---- DeviceIdInterceptor ----
-
-    @Test
-    void deviceInterceptor_missingHeader_throwsMissingDeviceId() {
-        DeviceIdInterceptor interceptor = new DeviceIdInterceptor(mock(UserService.class));
-        MockHttpServletRequest req = new MockHttpServletRequest("GET", "/v1/analyses");
-
-        assertThatThrownBy(() -> interceptor.preHandle(req, response, new Object()))
-                .isInstanceOf(ApiException.class)
-                .extracting(e -> ((ApiException) e).getErrorCode())
-                .isEqualTo(ErrorCode.MISSING_DEVICE_ID);
+    @AfterEach
+    void clear() {
+        SecurityContextHolder.clearContext();
     }
 
-    @Test
-    void deviceInterceptor_invalidUuid_throwsInvalidRequest() {
-        DeviceIdInterceptor interceptor = new DeviceIdInterceptor(mock(UserService.class));
-        MockHttpServletRequest req = new MockHttpServletRequest("GET", "/v1/analyses");
-        req.addHeader(DeviceIdInterceptor.HEADER, "not-a-uuid");
-
-        assertThatThrownBy(() -> interceptor.preHandle(req, response, new Object()))
-                .isInstanceOf(ApiException.class)
-                .extracting(e -> ((ApiException) e).getErrorCode())
-                .isEqualTo(ErrorCode.INVALID_REQUEST);
+    private void authenticateAs(UUID userId) {
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(userId, null, List.of()));
     }
 
-    @Test
-    void deviceInterceptor_validUuid_upsertsAndStoresUser() {
-        UserService userService = mock(UserService.class);
-        User user = new User("dev");
-        when(userService.getOrCreate(anyString())).thenReturn(user);
-
-        DeviceIdInterceptor interceptor = new DeviceIdInterceptor(userService);
-        MockHttpServletRequest req = new MockHttpServletRequest("POST", "/v1/analyses");
-        req.addHeader(DeviceIdInterceptor.HEADER, UUID.randomUUID().toString());
-
-        boolean proceed = interceptor.preHandle(req, response, new Object());
-
-        assertThat(proceed).isTrue();
-        assertThat(req.getAttribute(DeviceIdInterceptor.USER_ATTRIBUTE)).isSameAs(user);
+    private MockHttpServletRequest post() {
+        return new MockHttpServletRequest("POST", "/v1/analyses");
     }
 
-    // ---- RateLimitInterceptor ----
+    // ---- RateLimitInterceptor (인증 userId 기준) ----
 
     @Test
     void rateLimit_allowsUpToLimitThenBlocks() {
+        authenticateAs(UUID.randomUUID());
         RateLimitInterceptor interceptor = new RateLimitInterceptor(2);
-        String device = UUID.randomUUID().toString();
 
-        assertThat(interceptor.preHandle(post(device), response, new Object())).isTrue();
-        assertThat(interceptor.preHandle(post(device), response, new Object())).isTrue();
+        assertThat(interceptor.preHandle(post(), response, new Object())).isTrue();
+        assertThat(interceptor.preHandle(post(), response, new Object())).isTrue();
 
-        assertThatThrownBy(() -> interceptor.preHandle(post(device), response, new Object()))
+        assertThatThrownBy(() -> interceptor.preHandle(post(), response, new Object()))
                 .isInstanceOf(ApiException.class)
                 .extracting(e -> ((ApiException) e).getErrorCode())
                 .isEqualTo(ErrorCode.RATE_LIMITED);
     }
 
     @Test
-    void rateLimit_ignoresNonPost() {
+    void rateLimit_separateUsersAreIndependent() {
         RateLimitInterceptor interceptor = new RateLimitInterceptor(1);
-        String device = UUID.randomUUID().toString();
-        MockHttpServletRequest get = new MockHttpServletRequest("GET", "/v1/analyses");
-        get.addHeader(DeviceIdInterceptor.HEADER, device);
 
-        assertThat(interceptor.preHandle(get, response, new Object())).isTrue();
-        assertThat(interceptor.preHandle(get, response, new Object())).isTrue();
+        authenticateAs(UUID.randomUUID());
+        assertThat(interceptor.preHandle(post(), response, new Object())).isTrue();
+
+        // 다른 사용자는 별도 카운터
+        SecurityContextHolder.clearContext();
+        authenticateAs(UUID.randomUUID());
+        assertThat(interceptor.preHandle(post(), response, new Object())).isTrue();
     }
 
-    private MockHttpServletRequest post(String device) {
-        MockHttpServletRequest req = new MockHttpServletRequest("POST", "/v1/analyses");
-        req.addHeader(DeviceIdInterceptor.HEADER, device);
-        return req;
+    @Test
+    void rateLimit_ignoresNonPost() {
+        authenticateAs(UUID.randomUUID());
+        RateLimitInterceptor interceptor = new RateLimitInterceptor(1);
+        MockHttpServletRequest get = new MockHttpServletRequest("GET", "/v1/analyses");
+
+        assertThat(interceptor.preHandle(get, response, new Object())).isTrue();
+        assertThat(interceptor.preHandle(get, response, new Object())).isTrue();
     }
 
     // ---- GlobalExceptionHandler ----

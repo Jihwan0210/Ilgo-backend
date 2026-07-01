@@ -11,9 +11,9 @@ import java.time.Duration;
 @Configuration
 public class RestClientConfig {
 
-    /** Anthropic Messages API 전용 RestClient. timeout 30s. */
+    /** AI 게이트웨이 전용 RestClient. timeout 기본 30s. */
     @Bean
-    public RestClient anthropicRestClient(@Value("${anthropic.timeout-seconds:30}") int timeoutSeconds) {
+    public RestClient aiRestClient(@Value("${ai.timeout-seconds:30}") int timeoutSeconds) {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(Duration.ofSeconds(10));
         factory.setReadTimeout(Duration.ofSeconds(timeoutSeconds));

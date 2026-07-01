@@ -1,10 +1,10 @@
 package com.ilgo.analysis;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ilgo.ai.AnthropicClient;
-import com.ilgo.ai.ClaudeAnalysis;
-import com.ilgo.ai.ClaudeParseException;
-import com.ilgo.ai.ClaudeResponseParser;
+import com.ilgo.ai.AiGatewayClient;
+import com.ilgo.ai.AiAnalysis;
+import com.ilgo.ai.AiParseException;
+import com.ilgo.ai.AiResponseParser;
 import com.ilgo.analysis.dto.ActionDto;
 import com.ilgo.analysis.dto.ActionToggleResponse;
 import com.ilgo.analysis.dto.AnalysisListItem;
@@ -16,7 +16,7 @@ import com.ilgo.analysis.dto.FeedbackResponse;
 import com.ilgo.analysis.dto.RepliesRegenerateResponse;
 import com.ilgo.analysis.dto.ReplyDraftDto;
 import com.ilgo.analysis.dto.RiskDto;
-import com.ilgo.ai.ClaudePrompt;
+import com.ilgo.ai.AiPrompt;
 import com.ilgo.common.ApiException;
 import com.ilgo.common.ErrorCode;
 import com.ilgo.user.OutputMode;
@@ -47,7 +47,7 @@ public class AnalysisService {
 
     private static final Logger log = LoggerFactory.getLogger(AnalysisService.class);
     private static final Set<String> ALLOWED_MEDIA_TYPES = Set.of("image/jpeg", "image/png");
-    private static final int MAX_CLAUDE_ATTEMPTS = 2;
+    private static final int MAX_AI_ATTEMPTS = 2;
     private static final int MAX_LIMIT = 50;
     private static final int DEFAULT_LIMIT = 20;
 
@@ -55,8 +55,8 @@ public class AnalysisService {
     private final ActionRepository actionRepository;
     private final FeedbackRepository feedbackRepository;
     private final UserRepository userRepository;
-    private final AnthropicClient anthropicClient;
-    private final ClaudeResponseParser parser;
+    private final AiGatewayClient aiClient;
+    private final AiResponseParser parser;
     private final ObjectMapper objectMapper;
 
     private final boolean mockMode;
@@ -67,8 +67,8 @@ public class AnalysisService {
                            ActionRepository actionRepository,
                            FeedbackRepository feedbackRepository,
                            UserRepository userRepository,
-                           AnthropicClient anthropicClient,
-                           ClaudeResponseParser parser,
+                           AiGatewayClient aiClient,
+                           AiResponseParser parser,
                            ObjectMapper objectMapper,
                            @Value("${app.mock-mode:false}") boolean mockMode,
                            @Value("${app.mock-save:false}") boolean mockSave,
@@ -77,7 +77,7 @@ public class AnalysisService {
         this.actionRepository = actionRepository;
         this.feedbackRepository = feedbackRepository;
         this.userRepository = userRepository;
-        this.anthropicClient = anthropicClient;
+        this.aiClient = aiClient;
         this.parser = parser;
         this.objectMapper = objectMapper;
         this.mockMode = mockMode;
@@ -174,7 +174,7 @@ public class AnalysisService {
                 }
             }
         } else {
-            newDrafts = regenerateViaClaude(analysis, tone);
+            newDrafts = regenerateViaAi(analysis, tone);
         }
 
         analysis.clearReplyDrafts();
@@ -190,23 +190,23 @@ public class AnalysisService {
         return new RepliesRegenerateResponse(dtos);
     }
 
-    private List<ReplyDraft> regenerateViaClaude(Analysis analysis, String tone) {
-        for (int attempt = 1; attempt <= MAX_CLAUDE_ATTEMPTS; attempt++) {
+    private List<ReplyDraft> regenerateViaAi(Analysis analysis, String tone) {
+        for (int attempt = 1; attempt <= MAX_AI_ATTEMPTS; attempt++) {
             try {
-                String text = anthropicClient.completeText(
-                        ClaudePrompt.REPLY_SYSTEM,
-                        ClaudePrompt.replyUserText(analysis.getLang(), analysis.getOriginalText(),
+                String text = aiClient.completeText(
+                        AiPrompt.REPLY_SYSTEM,
+                        AiPrompt.replyUserText(analysis.getLang(), analysis.getOriginalText(),
                                 analysis.getExplainedText(), tone));
-                ClaudeAnalysis parsed = parser.parse(text);
+                AiAnalysis parsed = parser.parse(text);
                 List<ReplyDraft> drafts = new ArrayList<>();
                 if (parsed.replyDrafts() != null) {
-                    for (ClaudeAnalysis.ReplyDraft d : parsed.replyDrafts()) {
+                    for (AiAnalysis.ReplyDraft d : parsed.replyDrafts()) {
                         drafts.add(new ReplyDraft(d.korean(), d.noteInLang()));
                     }
                 }
                 return drafts;
-            } catch (ClaudeParseException e) {
-                log.warn("답장 재생성 파싱 실패 (attempt {}/{})", attempt, MAX_CLAUDE_ATTEMPTS);
+            } catch (AiParseException e) {
+                log.warn("답장 재생성 파싱 실패 (attempt {}/{})", attempt, MAX_AI_ATTEMPTS);
             }
         }
         throw new ApiException(ErrorCode.AI_PARSE_FAILED);
@@ -324,11 +324,11 @@ public class AnalysisService {
         analysis.setLang(lang);
         analysis.setImageRef(null); // 기본 이미지 미저장 정책
         analysis.setImageHash(sha256Hex(imageBytes));
-        analysis.setModel(anthropicClient.getModel());
+        analysis.setModel(aiClient.getModel());
         analysis.setSaved(save);
 
         long start = System.currentTimeMillis();
-        ClaudeAnalysis parsed = callClaudeWithRetry(base64, mediaType, outputMode, lang);
+        AiAnalysis parsed = callAiWithRetry(base64, mediaType, outputMode, lang);
         analysis.setLatencyMs((int) (System.currentTimeMillis() - start));
 
         if (parsed == null) {
@@ -344,22 +344,24 @@ public class AnalysisService {
     }
 
     /** 파싱 실패 시 1회 재시도. HTTP 오류(UPSTREAM/RATE)는 즉시 전파. */
-    private ClaudeAnalysis callClaudeWithRetry(String base64, String mediaType, OutputMode outputMode, String lang) {
-        ClaudeParseException last = null;
-        for (int attempt = 1; attempt <= MAX_CLAUDE_ATTEMPTS; attempt++) {
+    private AiAnalysis callAiWithRetry(String base64, String mediaType, OutputMode outputMode, String lang) {
+        AiParseException last = null;
+        for (int attempt = 1; attempt <= MAX_AI_ATTEMPTS; attempt++) {
+            String text = null;
             try {
-                String text = anthropicClient.complete(base64, mediaType, outputMode, lang);
+                text = aiClient.complete(base64, mediaType, outputMode, lang);
                 return parser.parse(text);
-            } catch (ClaudeParseException e) {
-                log.warn("Claude 파싱 실패 (attempt {}/{}): {}", attempt, MAX_CLAUDE_ATTEMPTS, e.getMessage());
+            } catch (AiParseException e) {
+                log.warn("AI 파싱 실패 (attempt {}/{}): {} | 응답원문(최대2000자)=[{}]",
+                        attempt, MAX_AI_ATTEMPTS, e.getMessage(), snippet(text));
                 last = e;
             }
         }
-        log.error("Claude 파싱 최종 실패", last);
+        log.error("AI 파싱 최종 실패", last);
         return null;
     }
 
-    private void applyParsed(Analysis analysis, ClaudeAnalysis p, OutputMode outputMode) {
+    private void applyParsed(Analysis analysis, AiAnalysis p, OutputMode outputMode) {
         analysis.setDocType(p.docType());
         analysis.setSummaryOneLine(p.summaryOneLine());
         analysis.setOriginalText(p.originalText());
@@ -375,18 +377,18 @@ public class AnalysisService {
         }
 
         if (p.risks() != null) {
-            for (ClaudeAnalysis.Risk r : p.risks()) {
+            for (AiAnalysis.Risk r : p.risks()) {
                 analysis.addRisk(new Risk(RiskLevel.fromJson(r.level()), r.type(), r.message()));
             }
         }
         if (p.actions() != null) {
-            for (ClaudeAnalysis.Action a : p.actions()) {
+            for (AiAnalysis.Action a : p.actions()) {
                 analysis.addAction(new Action(a.text(), a.priority()));
             }
         }
         // reply_drafts 는 native 모드에서만. easy 는 항상 빈 배열.
         if (outputMode == OutputMode.NATIVE && p.replyDrafts() != null) {
-            for (ClaudeAnalysis.ReplyDraft d : p.replyDrafts()) {
+            for (AiAnalysis.ReplyDraft d : p.replyDrafts()) {
                 analysis.addReplyDraft(new ReplyDraft(d.korean(), d.noteInLang()));
             }
         }
@@ -429,7 +431,7 @@ public class AnalysisService {
         a.setOriginalText(r.originalText());
         a.setExplainedText(r.explainedText());
         a.setConsequence(r.consequence());
-        a.setModel(anthropicClient.getModel());
+        a.setModel(aiClient.getModel());
         a.setSaved(save);
         if (r.cards() != null) {
             a.setCardWhat(r.cards().what());
@@ -472,6 +474,13 @@ public class AnalysisService {
 
     private static String str(Object id) {
         return id == null ? null : id.toString();
+    }
+
+    private static String snippet(String s) {
+        if (s == null) {
+            return "null";
+        }
+        return s.length() > 2000 ? s.substring(0, 2000) + "...(truncated)" : s;
     }
 
     private static OffsetDateTime toUtc(OffsetDateTime t) {

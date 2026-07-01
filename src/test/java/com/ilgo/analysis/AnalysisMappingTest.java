@@ -42,7 +42,7 @@ class AnalysisMappingTest {
 
     @Test
     void persistsAnalysisWithChildrenAndComputesTopRiskLevel() {
-        User user = userRepository.save(new User("device-A"));
+        User user = userRepository.save(new User("a@ex.com", "h"));
 
         Analysis a = newAnalysis(user, AnalysisStatus.DONE);
         a.addRisk(new Risk(RiskLevel.YELLOW, "기한", "노랑 위험"));
@@ -65,7 +65,7 @@ class AnalysisMappingTest {
 
     @Test
     void topRiskLevelIsNullWhenNoRisks() {
-        User user = userRepository.save(new User("device-B"));
+        User user = userRepository.save(new User("b@ex.com", "h"));
         Analysis a = analysisRepository.save(newAnalysis(user, AnalysisStatus.DONE));
         em.flush();
         em.clear();
@@ -75,7 +75,7 @@ class AnalysisMappingTest {
 
     @Test
     void cascadeDeletesChildren() {
-        User user = userRepository.save(new User("device-C"));
+        User user = userRepository.save(new User("c@ex.com", "h"));
         Analysis a = newAnalysis(user, AnalysisStatus.DONE);
         a.addRisk(new Risk(RiskLevel.GREEN, "기타", "안전"));
         a.addAction(new Action("할 일", 1));
@@ -99,8 +99,8 @@ class AnalysisMappingTest {
 
     @Test
     void firstPageQueryReturnsOnlyOwnersSavedItems() {
-        User owner = userRepository.save(new User("device-owner"));
-        User other = userRepository.save(new User("device-other"));
+        User owner = userRepository.save(new User("owner@ex.com", "h"));
+        User other = userRepository.save(new User("other@ex.com", "h"));
 
         analysisRepository.save(newAnalysis(owner, AnalysisStatus.DONE));
         analysisRepository.save(newAnalysis(owner, AnalysisStatus.DONE));

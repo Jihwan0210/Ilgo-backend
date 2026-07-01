@@ -10,7 +10,8 @@ import org.springframework.test.context.TestPropertySource;
         "spring.datasource.username=sa",
         "spring.datasource.password=",
         "spring.jpa.hibernate.ddl-auto=create-drop",
-        "app.mock-mode=true"
+        "app.mock-mode=true",
+        "jwt.secret=test-secret-key-for-junit-0123456789-abcdef"
 })
 class IlgoApplicationTests {
 

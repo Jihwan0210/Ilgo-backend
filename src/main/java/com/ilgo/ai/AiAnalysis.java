@@ -5,11 +5,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
 
 /**
- * Claude 가 반환한 JSON 을 매핑한 구조체. (snake_case 는 전역 네이밍 전략으로 매핑)
+ * AI 가 반환한 JSON 을 매핑한 구조체. (snake_case 는 전역 네이밍 전략으로 매핑)
  * 서비스가 이 값을 엔티티로 변환한다.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record ClaudeAnalysis(
+public record AiAnalysis(
         String docType,
         String summaryOneLine,
         String originalText,

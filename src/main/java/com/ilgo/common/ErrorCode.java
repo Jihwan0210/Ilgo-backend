@@ -8,8 +8,11 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
     INVALID_REQUEST(HttpStatus.BAD_REQUEST, "요청이 올바르지 않습니다."),
     UNSUPPORTED_MEDIA_TYPE(HttpStatus.BAD_REQUEST, "지원하지 않는 미디어 타입입니다. (image/jpeg, image/png 만 허용)"),
-    MISSING_DEVICE_ID(HttpStatus.UNAUTHORIZED, "X-Device-Id 헤더가 필요합니다."),
+    INVALID_EMAIL(HttpStatus.BAD_REQUEST, "이메일 형식이 올바르지 않습니다."),
+    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증이 필요합니다. (토큰 없음/만료/위조)"),
+    INVALID_CREDENTIALS(HttpStatus.UNAUTHORIZED, "이메일 또는 비밀번호가 올바르지 않습니다."),
     FORBIDDEN(HttpStatus.FORBIDDEN, "이 리소스에 접근할 수 없습니다."),
+    EMAIL_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 가입된 이메일입니다."),
     NOT_FOUND(HttpStatus.NOT_FOUND, "리소스를 찾을 수 없습니다."),
     NOT_NATIVE_MODE(HttpStatus.CONFLICT, "native 모드 분석에서만 답장을 재생성할 수 있습니다."),
     IMAGE_TOO_LARGE(HttpStatus.PAYLOAD_TOO_LARGE, "이미지 크기가 너무 큽니다. (최대 5MB)"),

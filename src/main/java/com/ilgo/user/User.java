@@ -16,15 +16,19 @@ import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "users", uniqueConstraints = @UniqueConstraint(name = "ux_users_device_id", columnNames = "device_id"))
+@Table(name = "users", uniqueConstraints = @UniqueConstraint(name = "ux_users_email", columnNames = "email"))
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "device_id", nullable = false, length = 64)
-    private String deviceId;
+    @Column(nullable = false, length = 255)
+    private String email;
+
+    /** BCrypt 해시. 평문 저장 금지. */
+    @Column(name = "password_hash", nullable = false, length = 255)
+    private String passwordHash;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "default_output_mode", nullable = false, length = 16)
@@ -44,8 +48,9 @@ public class User {
     public User() {
     }
 
-    public User(String deviceId) {
-        this.deviceId = deviceId;
+    public User(String email, String passwordHash) {
+        this.email = email;
+        this.passwordHash = passwordHash;
     }
 
     public UUID getId() {
@@ -56,12 +61,20 @@ public class User {
         this.id = id;
     }
 
-    public String getDeviceId() {
-        return deviceId;
+    public String getEmail() {
+        return email;
     }
 
-    public void setDeviceId(String deviceId) {
-        this.deviceId = deviceId;
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
 
     public OutputMode getDefaultOutputMode() {
