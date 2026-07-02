@@ -401,8 +401,11 @@ public class AnalysisService {
     public AnalysisResponse toResponse(Analysis a) {
         List<RiskDto> risks = new ArrayList<>();
         for (Risk r : a.getRisks()) {
+            // steps 는 LAZY @ElementCollection → 트랜잭션 안에서 복사본으로 초기화해야
+            // 세션 종료 후 직렬화 시 LazyInitializationException 이 안 난다.
+            List<String> steps = (r.getSteps() == null) ? List.of() : new ArrayList<>(r.getSteps());
             risks.add(new RiskDto(str(r.getId()), r.getLevel(), r.getType(), r.getMessage(),
-                    r.getDetail(), r.getSteps()));
+                    r.getDetail(), steps));
         }
         List<ActionDto> actions = new ArrayList<>();
         for (Action ac : a.getActions()) {
