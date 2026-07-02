@@ -91,11 +91,20 @@
 DB 마이그레이션 없음 · 신규 에러코드 없음 · 인증 변경 없음 · URL 방문/스캔 없음 · 신규 엔드포인트 없음.
 
 ## 7. 수용 기준 (§9)
-- [ ] 스미싱성 이미지 → risks red/yellow, type∈{사기,스미싱}
-- [ ] actions에 링크 미클릭 + 공식 채널 확인 포함
-- [ ] risk detail/steps 프론트 상세에서 사용 가능
-- [ ] `help-contacts?risk_type=사기` 첫 항목 118(kisa_118)
-- [ ] `help-contacts?risk_type=임금` 첫 항목 1350(moel_1350)
-- [ ] 미지 risk_type → 200 + 기본 목록
-- [ ] 원문 전체 운영 로그 미기록
-- [ ] Swagger에 risk_type 반영
+- [x] 스미싱성 이미지 → risks red/yellow, type∈{사기,스미싱} — 프롬프트 강화 + mock 픽스처/통합테스트
+- [x] actions에 링크 미클릭 + 공식 채널 확인 포함 — 프롬프트 + 통합테스트 검증
+- [x] risk detail/steps 프론트 상세에서 사용 가능 — 기존 스키마 유지, 픽스처 포함
+- [x] `help-contacts?risk_type=사기` 첫 항목 118(kisa_118) — 단위/통합테스트
+- [x] `help-contacts?risk_type=임금` 첫 항목 1350(moel_1350) — 단위/통합테스트
+- [x] 미지 risk_type → 200 + 기본 목록 — 단위/통합테스트
+- [x] 원문 전체 운영 로그 미기록 — INFO 로그 없음 유지 + LogSanitizer PII 마스킹
+- [x] Swagger에 risk_type 반영 — @Parameter/@Operation
+
+## 8. 구현 결과
+
+- 신규: `RiskTypes`(정규화/분류), `LogSanitizer`(PII 마스킹), `mock/analyze_easy_smishing.json`.
+- 변경: `AiPrompt.SYSTEM`, `AnalysisService`(normalize 적용 + snippet 마스킹 + smishing mock 분기),
+  `HelpContactService`(스펙 연락처 + risk_type 정렬), `HelpContactController`(risk_type 파라미터), `HelpContact`(category 주석).
+- 테스트: `RiskTypesTest`(6), `HelpContactServiceTest`(7), `HelpContactsApiTest`(+4), `AnalysisApiMockModeTest`(+1), `LogSanitizerTest`(5). 전체 89개 그린.
+- §8 프롬프트-eval 4케이스(공공기관 사칭+URL, 택배 사칭+앱설치, 실제 고지서 오탐 방지, 임금 삭감)는 실 AI 필요 → 수동 검증 대상으로 남김.
+- 커밋: 스펙 문서 → 구현(`feat(analyses,help-contacts)`).
