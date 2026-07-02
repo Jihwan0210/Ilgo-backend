@@ -19,6 +19,7 @@ import com.ilgo.analysis.dto.RiskDto;
 import com.ilgo.ai.AiPrompt;
 import com.ilgo.common.ApiException;
 import com.ilgo.common.ErrorCode;
+import com.ilgo.common.LogSanitizer;
 import com.ilgo.user.OutputMode;
 import com.ilgo.user.User;
 import com.ilgo.user.UserRepository;
@@ -299,6 +300,11 @@ public class AnalysisService {
             return "mock/analyze_native_wage.json";
         }
         String h = hint == null ? "" : hint.toLowerCase();
+        boolean smishing = h.contains("스미싱") || h.contains("사기") || h.contains("피싱")
+                || h.contains("smishing") || h.contains("phishing");
+        if (smishing) {
+            return "mock/analyze_easy_smishing.json";
+        }
         boolean fine = h.contains("과태료") || h.contains("주차") || h.contains("벌금") || h.contains("fine");
         return fine ? "mock/analyze_easy_fine.json" : "mock/analyze_easy_health.json";
     }
@@ -378,8 +384,8 @@ public class AnalysisService {
 
         if (p.risks() != null) {
             for (AiAnalysis.Risk r : p.risks()) {
-                analysis.addRisk(new Risk(RiskLevel.fromJson(r.level()), r.type(), r.message(),
-                        r.detail(), r.steps()));
+                analysis.addRisk(new Risk(RiskLevel.fromJson(r.level()), RiskTypes.normalize(r.type()),
+                        r.message(), r.detail(), r.steps()));
             }
         }
         if (p.actions() != null) {
@@ -447,7 +453,8 @@ public class AnalysisService {
         }
         if (r.risks() != null) {
             for (RiskDto rd : r.risks()) {
-                a.addRisk(new Risk(rd.level(), rd.type(), rd.message(), rd.detail(), rd.steps()));
+                a.addRisk(new Risk(rd.level(), RiskTypes.normalize(rd.type()), rd.message(),
+                        rd.detail(), rd.steps()));
             }
         }
         if (r.actions() != null) {
@@ -485,7 +492,8 @@ public class AnalysisService {
         if (s == null) {
             return "null";
         }
-        return s.length() > 2000 ? s.substring(0, 2000) + "...(truncated)" : s;
+        String masked = LogSanitizer.maskPii(s);
+        return masked.length() > 2000 ? masked.substring(0, 2000) + "...(truncated)" : masked;
     }
 
     private static OffsetDateTime toUtc(OffsetDateTime t) {
