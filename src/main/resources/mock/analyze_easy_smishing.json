@@ -1,0 +1,25 @@
+{
+  "id": "anl_0004",
+  "status": "done",
+  "output_mode": "easy_korean",
+  "lang": "ko",
+  "doc_type": "메시지",
+  "summary_one_line": "건강보험 미납 안내처럼 보이지만 사기 문자일 수 있어요",
+  "original_text": "[국민건강보험] 미납 보험료 68,000원. 오늘까지 납부하지 않으면 압류됩니다. 확인: http://nhis-pay-check.example",
+  "explained_text": "건강보험료를 내라는 문자처럼 보여요. 하지만 링크 주소가 이상해요. 바로 누르지 말고 공식 앱이나 고객센터로 확인해야 해요.",
+  "consequence": "링크를 누르면 개인정보나 돈을 빼앗길 수 있어요.",
+  "cards": { "what": "건강보험 미납 안내 의심 문자", "when": "오늘까지라고 적혀 있음", "where": null, "amount": "68,000원", "deadline": null },
+  "risks": [
+    { "id": "rsk_4", "level": "red", "type": "사기",
+      "message": "공식 문자인지 확인되지 않은 링크가 있어요. 스미싱일 수 있으니 누르지 마세요.",
+      "detail": "국민건강보험을 사칭하는 문자처럼 보이지만, 링크 주소가 공식 홈페이지인지 확인되지 않아요. 돈이나 개인정보를 빼앗는 스미싱 문자일 수 있어요.",
+      "steps": ["문자 안의 링크를 누르지 마세요.", "국민건강보험공단 공식 앱이나 고객센터로 직접 확인하세요.", "의심되면 118에 상담해 보세요."] }
+  ],
+  "actions": [
+    { "id": "act_s1", "text": "문자 안의 링크를 누르지 마세요.", "priority": 1, "is_done": false },
+    { "id": "act_s2", "text": "공식 앱이나 고객센터로 직접 확인하세요.", "priority": 2, "is_done": false },
+    { "id": "act_s3", "text": "의심되면 118에 상담해 보세요.", "priority": 3, "is_done": false }
+  ],
+  "reply_drafts": [],
+  "created_at": "2026-07-02T02:00:00Z"
+}

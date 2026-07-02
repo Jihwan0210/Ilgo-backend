@@ -11,6 +11,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
 
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
@@ -109,6 +112,25 @@ class AnalysisApiMockModeTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.risks[0].level", is("red")))
                 .andExpect(jsonPath("$.cards.amount", is("40,000원")));
+    }
+
+    @Test
+    void easyKorean_withSmishingHint_returnsSmishingRisk() throws Exception {
+        String body = """
+                {"image_base64":"%s","media_type":"image/png","output_mode":"easy_korean","lang":"ko","hint":"스미싱 의심 문자"}
+                """.formatted(TINY_IMG);
+
+        mockMvc.perform(post("/v1/analyses")
+                        .header("Authorization", bearer())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.doc_type", is("메시지")))
+                .andExpect(jsonPath("$.risks[0].level", is("red")))
+                .andExpect(jsonPath("$.risks[0].type", anyOf(is("사기"), is("스미싱"))))
+                .andExpect(jsonPath("$.actions[*].text", hasItem(containsString("링크"))))
+                .andExpect(jsonPath("$.actions[*].text", hasItem(containsString("118"))))
+                .andExpect(jsonPath("$.reply_drafts", hasSize(0)));
     }
 
     @Test

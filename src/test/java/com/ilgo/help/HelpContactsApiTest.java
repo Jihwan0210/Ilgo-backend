@@ -13,6 +13,7 @@ import java.util.UUID;
 
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -67,5 +68,35 @@ class HelpContactsApiTest {
     void list_withoutToken_returns401() throws Exception {
         mockMvc.perform(get("/v1/help-contacts"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void list_riskTypeSagi_returnsKisa118First() throws Exception {
+        mockMvc.perform(get("/v1/help-contacts?risk_type=사기").header("Authorization", token()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[0].id", is("kisa_118")))
+                .andExpect(jsonPath("$.items[0].phone", is("118")));
+    }
+
+    @Test
+    void list_riskTypeSmishing_returnsKisa118First() throws Exception {
+        mockMvc.perform(get("/v1/help-contacts?risk_type=스미싱").header("Authorization", token()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[0].id", is("kisa_118")));
+    }
+
+    @Test
+    void list_riskTypeImgeum_returnsMoel1350First() throws Exception {
+        mockMvc.perform(get("/v1/help-contacts?risk_type=임금").header("Authorization", token()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[0].id", is("moel_1350")))
+                .andExpect(jsonPath("$.items[0].phone", is("1350")));
+    }
+
+    @Test
+    void list_unknownRiskType_returns200WithDefaultList() throws Exception {
+        mockMvc.perform(get("/v1/help-contacts?risk_type=완전히모르는값").header("Authorization", token()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items.length()", is(5)));
     }
 }
