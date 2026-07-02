@@ -17,7 +17,7 @@ public final class AiPrompt {
 
             반드시 아래 키만 가진 JSON 하나로만 응답하세요. 다른 텍스트/설명/코드펜스 금지.
             {
-              "doc_type": "고지서|공지|메시지|계약|기타 중 하나 또는 null",
+              "doc_type": "고지서|공지|메시지|계약|기타|문서아님 중 하나 또는 null",
               "summary_one_line": "핵심 한 문장",
               "original_text": "이미지에서 읽은 원문(OCR)",
               "explained_text": "쉬운말 또는 모국어 풀이",
@@ -35,6 +35,7 @@ public final class AiPrompt {
               steps 는 사용자가 취할 단계별 대처를 배열로(없으면 빈 배열 []). message/detail/steps 는 output_mode 언어를 따르세요.
             - 금액·날짜는 원문에서 정확히 인용하고, 불확실하면 null. 없는 사실을 지어내지 마세요.
             - cards.deadline 은 반드시 YYYY-MM-DD 형식 또는 null.
+            - 글이 거의 없거나 문서가 아닌 이미지(풍경·셀카·음식 등)면 doc_type 을 "문서아님" 으로 한다.
 
             스미싱/피싱/사기 판단:
             - 공식 기관명·금융기관·택배사·공공기관을 사칭하면서 낯선 URL, 단축 URL, 오타 도메인,

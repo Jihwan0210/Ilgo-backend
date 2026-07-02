@@ -338,15 +338,33 @@ public class AnalysisService {
         analysis.setLatencyMs((int) (System.currentTimeMillis() - start));
 
         if (parsed == null) {
-            analysis.setStatus(AnalysisStatus.FAILED);
-            analysisRepository.save(analysis);
-            throw new ApiException(ErrorCode.AI_PARSE_FAILED);
+            // 판독 실패: 저장하지 않고 200 + status=failed 로 응답(프론트가 "안 읽혀요" 화면 표시).
+            return failedResponse(outputMode, lang);
         }
 
         applyParsed(analysis, parsed, outputMode);
         analysis.setStatus(AnalysisStatus.DONE);
-        Analysis saved = analysisRepository.save(analysis);
-        return toResponse(saved);
+
+        DocClass docClass = DocClass.from(analysis.getDocType());
+        if (SavePolicy.shouldPersist(analysis.getStatus(), docClass, save)) {
+            analysis.setSaved(true);
+            Analysis saved = analysisRepository.save(analysis);
+            return toResponse(saved);
+        }
+        // 저장 스킵(문서 아님/미지 또는 save=false): 저장하지 않고 200 + 결과(id=null) 반환.
+        analysis.setCreatedAt(OffsetDateTime.now());
+        return toResponse(analysis);
+    }
+
+    /** 판독 실패 응답(저장 안 함, id=null, status=failed). */
+    private AnalysisResponse failedResponse(OutputMode outputMode, String lang) {
+        return new AnalysisResponse(
+                null, AnalysisStatus.FAILED, outputMode, lang, null,
+                DocClass.UNKNOWN,
+                null, null, null, null,
+                new CardDto(null, null, null, null, null),
+                List.of(), List.of(), List.of(),
+                toUtc(OffsetDateTime.now()));
     }
 
     /** 파싱 실패 시 1회 재시도. HTTP 오류(UPSTREAM/RATE)는 즉시 전파. */
@@ -426,6 +444,7 @@ public class AnalysisService {
 
         return new AnalysisResponse(
                 str(a.getId()), a.getStatus(), a.getOutputMode(), a.getLang(), a.getDocType(),
+                null, // docClass: docType 에서 파생
                 a.getSummaryOneLine(), a.getOriginalText(), a.getExplainedText(), a.getConsequence(),
                 cards, risks, actions, replies, toUtc(a.getCreatedAt()));
     }

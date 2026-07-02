@@ -91,9 +91,14 @@ shouldPersist(status, docClass, save) = status == DONE && docClass.isSavable() &
 DB 마이그레이션 없음 · DocClass 미저장(파생) · doc_type wire 유지 · 신규 엔드포인트 없음.
 
 ## 7. 수용 기준
-- [ ] status=failed 결과가 DB 미저장 + GET 목록 제외.
-- [ ] 문서아님/무관(UNKNOWN/NOT_A_DOCUMENT) 미저장.
-- [ ] 정상(DONE+savable, save=true) 저장.
-- [ ] 저장 여부 무관 POST 200(스킵) / 201(저장) 반환.
-- [ ] 분기는 enum(문자열 하드코딩 아님).
-- [ ] Swagger enum·정책 반영 + 단위테스트(failed/unknown/done).
+- [x] status=failed 결과가 DB 미저장 + GET 목록 제외 — `AnalysisSavePolicyApiTest.parseFailure_*`
+- [x] 문서아님/무관(UNKNOWN/NOT_A_DOCUMENT) 미저장 — `notADocument_*`
+- [x] 정상(DONE+savable, save=true) 저장 — `savableDocument_isSaved_and201`
+- [x] 저장 여부 무관 POST 200(스킵) / 201(저장) 반환 — 컨트롤러 `respond()`
+- [x] 분기는 enum(문자열 하드코딩 아님) — `DocClass` + `SavePolicy`
+- [x] Swagger enum·정책 반영 + 단위테스트(failed/unknown/done) — `@Operation` 설명 + `DocClassTest`/`SavePolicyTest`
+
+## 8. 구현 결과
+- 신규: `DocClass`, `SavePolicy`. 변경: `AnalysisResponse`(doc_class 파생), `AnalysisService`(handleReal 저장 분기 + failedResponse), `AnalysisController`(ResponseEntity 201/200), `AiPrompt.SYSTEM`(문서아님).
+- 테스트: `DocClassTest`(5), `SavePolicyTest`(4), `AnalysisSavePolicyApiTest`(4). 전체 102개 그린.
+- DB 마이그레이션 없음(docClass 파생, 미저장).

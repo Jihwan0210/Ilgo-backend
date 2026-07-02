@@ -46,18 +46,17 @@ public class AnalysisController {
         this.analysisService = analysisService;
     }
 
-    @Operation(summary = "이미지 분석 (JSON)", description = "이미지 base64 를 받아 분석 결과를 저장/반환한다.")
+    @Operation(summary = "이미지 분석 (JSON)",
+            description = "이미지 base64 를 받아 분석. 저장 정책: status=DONE 이고 문서 분류가 저장 대상(notice/announcement/message/contract)이며 save=true 일 때만 저장(201). 판독 실패·문서 아님/미지·save=false 는 저장하지 않고 200(id=null).")
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseStatus(HttpStatus.CREATED)
-    public AnalysisResponse analyzeJson(@Valid @RequestBody AnalyzeRequest request,
-                                        @CurrentUser User user) {
-        return analysisService.analyze(user, request);
+    public ResponseEntity<AnalysisResponse> analyzeJson(@Valid @RequestBody AnalyzeRequest request,
+                                                        @CurrentUser User user) {
+        return respond(analysisService.analyze(user, request));
     }
 
-    @Operation(summary = "이미지 분석 (multipart)", description = "이미지 파일을 업로드해 분석한다.")
+    @Operation(summary = "이미지 분석 (multipart)", description = "이미지 파일을 업로드해 분석한다. 저장 정책은 JSON 엔드포인트와 동일(저장 201 / 스킵·실패 200 id=null).")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseStatus(HttpStatus.CREATED)
-    public AnalysisResponse analyzeMultipart(@RequestParam("image") MultipartFile image,
+    public ResponseEntity<AnalysisResponse> analyzeMultipart(@RequestParam("image") MultipartFile image,
                                              @RequestParam(value = "output_mode", required = false) String outputMode,
                                              @RequestParam(value = "lang", required = false) String lang,
                                              @RequestParam(value = "save", required = false) Boolean save,
@@ -80,7 +79,13 @@ public class AnalysisController {
                 lang,
                 save,
                 hint);
-        return analysisService.analyze(user, request);
+        return respond(analysisService.analyze(user, request));
+    }
+
+    /** 저장되면 201(id 존재), 저장 스킵/실패면 200(id=null). */
+    private ResponseEntity<AnalysisResponse> respond(AnalysisResponse result) {
+        HttpStatus code = result.id() != null ? HttpStatus.CREATED : HttpStatus.OK;
+        return ResponseEntity.status(code).body(result);
     }
 
     @Operation(summary = "분석 단건 조회", description = "소유자만 조회 가능.")
