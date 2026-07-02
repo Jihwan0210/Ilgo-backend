@@ -38,8 +38,9 @@ public class OpenApiConfig {
 
     @Bean
     public OpenAPI ilgoOpenAPI() {
-        Server local = new Server().url("http://localhost:8080").description("로컬");
-        Server prod = new Server().url("https://ilgo-api.up.railway.app").description("Railway (배포)");
+        // 상대경로 서버: Swagger UI 가 현재 열린 host(로컬이든 배포든)로 요청을 보낸다.
+        // 하드코딩 host 를 두면 배포된 Swagger 가 localhost 로 쏘는 문제가 생김.
+        Server current = new Server().url("/").description("current host");
 
         Info info = new Info()
                 .title("읽고 (Ilgo) API")
@@ -63,7 +64,7 @@ public class OpenApiConfig {
 
         return new OpenAPI()
                 .info(info)
-                .servers(List.of(local, prod))
+                .servers(List.of(current))
                 .components(new Components().addSecuritySchemes(BEARER, bearerScheme))
                 // 전역 보안 요구(자물쇠). auth/health 는 @SecurityRequirements 로 개별 제외.
                 .addSecurityItem(new SecurityRequirement().addList(BEARER));
