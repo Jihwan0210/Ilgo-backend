@@ -35,6 +35,8 @@ ai:
 app:
   # 키가 없으면 mock 응답으로 동작한다 (AI_API_KEY 비어 있을 때 true 권장)
   mock-mode: ${APP_MOCK_MODE:false}
+  # mock 결과를 DB에 저장해 목록·상세가 실제 데이터로 이어지게 한다
+  mock-save: ${APP_MOCK_SAVE:true}
   rate-limit-per-min: 20
   # 웹 프론트 주소. 콤마로 여러 개 (예: https://jihwan0210.github.io,http://localhost:3000)
   cors-allowed-origins: ${CORS_ALLOWED_ORIGINS:}

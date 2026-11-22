@@ -107,7 +107,8 @@ public class AnalysisService {
 
     @Transactional(readOnly = true)
     public AnalysisListResponse list(User user, Integer limit, String cursor, Boolean saved) {
-        if (mockMode) {
+        // mock 저장을 켜면 실제 DB 목록을 쓴다. 고정 목록(list.json)의 id는 DB에 없어 상세 조회가 404가 난다.
+        if (mockMode && !mockSave) {
             return readMockList();
         }
         int size = normalizeLimit(limit);
